@@ -24,10 +24,13 @@ namespace TheWorld
 
         public Startup(IApplicationEnvironment appEnv)
         {
+            // order matters...last one wins if you have duplicate settings defined in multiple places
             var builder = new ConfigurationBuilder()
                 .SetBasePath(appEnv.ApplicationBasePath)
                 .AddJsonFile("config.json")
                 .AddEnvironmentVariables();
+                //.AddUserSecrets(); // use this instead of hardcoding the 
+                
 
             Configuration = builder.Build(); 
         }
@@ -55,6 +58,7 @@ namespace TheWorld
 
             services.AddTransient<TheWorldContextSeedData>(); // only need it once
             services.AddScoped<IWorldRepository, WorldRepository>(); // only want construction of respository/context once per request 
+            services.AddScoped<CoordService>();
 
 #if DEBUG
             services.AddScoped<IMailService, DebugMailService>(); //DI
@@ -76,10 +80,10 @@ namespace TheWorld
             // Mappings
             Mapper.Initialize(config =>
             {
-                config.CreateMap<Trip, TripViewModel>()
-                    .ReverseMap();
+                config.CreateMap<Trip, TripViewModel>().ReverseMap();
+                config.CreateMap<Stop, StopViewModel>().ReverseMap();
             }
-            );
+                );
 
             // Routes
             app.UseMvc(config =>

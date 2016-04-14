@@ -58,5 +58,20 @@ namespace TheWorld.Models
         {
             return (_context.SaveChanges() > 0);
         }
+
+        public Trip GetTripByName(string tripName)
+        {
+            return _context.Trips
+                .Include(t => t.Stops)
+                .FirstOrDefault(t => t.Name == tripName);
+        }
+
+        public void AddStop(string tripName, Stop newStop)
+        {
+            var trip = GetTripByName(tripName);
+
+            newStop.Order = trip.Stops.Max(s => s.Order) + 1;
+            _context.Add(newStop);
+        }
     }
 }

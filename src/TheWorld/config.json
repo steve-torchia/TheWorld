@@ -1,7 +1,8 @@
 {
   "AppSettings": {
 
-    "SiteEmailAddress": "me@aol.com"
+    "SiteEmailAddress": "me@aol.com",
+    "BingMapsKey": "AluDalUWPBNoz2uYsr7Or82KRAFHOVgVaG3PPYz6hujbQmdw9SetCcGtqG6KRAUQ" 
 
   },
 
