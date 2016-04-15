@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Storage;
 
 namespace TheWorld.Models
 {
-    public class WorldContext : DbContext
+    public class WorldContext : IdentityDbContext<WorldUser>
     {
         public WorldContext()
         {
@@ -24,7 +25,6 @@ namespace TheWorld.Models
             var connString = Startup.Configuration["Data:WorldContextConnection"];
 
             optionsBuilder.UseSqlServer(connString);
-
 
 
             base.OnConfiguring(optionsBuilder);

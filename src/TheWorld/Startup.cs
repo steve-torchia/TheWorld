@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Authentication.ExtendedProtection;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Identity.EntityFramework;
+using Microsoft.AspNet.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -18,7 +21,7 @@ using TheWorld.ViewModels;
 
 namespace TheWorld
 {
-    public class Startup // Only called one when the web server starts
+    public class Startup // Only called one when the host (webserver, console, etc..) starts
     {
         public static IConfigurationRoot Configuration;
 
@@ -39,6 +42,7 @@ namespace TheWorld
         // For more information on how to configure your application, visit http://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            // 
             services.AddMvc()
                 .AddJsonOptions(opt =>
                 {
@@ -46,19 +50,52 @@ namespace TheWorld
                     opt.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
                 });
 
+            //services.AddCaching();// need to look into what this provides
+
+            services.AddIdentity<WorldUser, IdentityRole>(config =>
+            {
+                config.User.RequireUniqueEmail = true;
+                config.Password.RequiredLength = 8;
+                config.Cookies.ApplicationCookie.LoginPath = "/Auth/Login"; //where to get redirected if not auth'd
+
+            })
+                .AddEntityFrameworkStores<WorldContext>();  // add the identities to the context
+
+
+            // Configure  Auth pipeline...need to research
+            //services.ConfigureAuthorization(config =>
+            //{
+            //    config.AddPolicy("SalesSenior", policy =>
+            //    {
+            //        policy.RequireAuthenticatedUser();
+            //        policy.RequireClaim("department", "sales");
+            //        policy.RequireClaim("status", "senior");
+            //    });
+            //};
+
+            //// Controller would have:
+            //[Authorize("SalesSenior")]
+            //public IActionResult Manage()
+            //{
+            //    //do stuff
+            //}
+
+
             services.AddLogging(); //build-in support for loggin in asp.net 5/core
 
-
-            // DI Built-In 
 
             // EF7
             services.AddEntityFramework()
                 .AddSqlServer() //core entity doesn't know about sql so we gotta add it
                 .AddDbContext<WorldContext>();
 
+            //  (Built-In) DI
+
             services.AddTransient<TheWorldContextSeedData>(); // only need it once
             services.AddScoped<IWorldRepository, WorldRepository>(); // only want construction of respository/context once per request 
             services.AddScoped<CoordService>();
+
+
 
 #if DEBUG
             services.AddScoped<IMailService, DebugMailService>(); //DI
@@ -69,13 +106,15 @@ namespace TheWorld
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, TheWorldContextSeedData seeder, ILoggerFactory loggerFactory)
+        public async void Configure(IApplicationBuilder app, TheWorldContextSeedData seeder, ILoggerFactory loggerFactory)
         {
             // logger has debug/console out of the box.  use AddProvider() to hook up your own
             loggerFactory.AddConsole(LogLevel.Debug);
 
             //app.UseDefaultFiles(); //mvc will handle this..dont'want to serve index.html
             app.UseStaticFiles();
+
+            app.UseIdentity();
 
             // Mappings
             Mapper.Initialize(config =>
@@ -98,7 +137,7 @@ namespace TheWorld
 
 
             //  Data seed/prep (only a 1-time thing...or use it to update schema?)
-            seeder.EnsureSeedData();
+            await seeder.EnsureSeedDataAsync();
 
             //app.UseIISPlatformHandler();
 //            app.Run(async (context) =>
