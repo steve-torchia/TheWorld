@@ -28,12 +28,14 @@ namespace TheWorld.Models
                 var newUser = new WorldUser()
                 {
                     UserName = "samhastings",
-                    Email = "sam.hastings@theworld.com"
+                    Email = "sam.hastings@theworld.com",
+                    FirstTrip = DateTime.UtcNow,
+                    
+
+
                 };
-
-                await _userManager.CreateAsync(newUser,"P@ssword!");
+               var x = await _userManager.CreateAsync(newUser, "P@ssword!1");
             }
-
             if (!_context.Trips.Any())
             {
                 // Add new data

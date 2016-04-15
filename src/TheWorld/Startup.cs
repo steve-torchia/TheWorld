@@ -43,7 +43,12 @@ namespace TheWorld
         public void ConfigureServices(IServiceCollection services)
         {
             // 
-            services.AddMvc()
+            services.AddMvc(config =>
+            {
+#if !DEBUG
+                config.Filters.Add(new RequireHttpsAttribute()); // site-wide setting
+#endif
+            })
                 .AddJsonOptions(opt =>
                 {
                     // serializer for .net to json and vice versa...make json property names camel-case
@@ -102,7 +107,7 @@ namespace TheWorld
             
 #else
              services.AddScoped<IMailService, RealMailService>(); //DI
-#endif  
+#endif
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

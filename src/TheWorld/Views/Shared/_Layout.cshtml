@@ -12,16 +12,23 @@
 
 <body>
 
-    <div id="sidebar">
-        <img src="~/img/ice_hockey_monkey1.jpg" alt="headshot" class="headshot" />
-        <span id="username">Sam Hastings</span>
-        <ul class="nav">
-            <li class="active"><a asp-controller="App" asp-action="Index">Home</a></li>
-            <li><a asp-controller="App" asp-action="About">About</a></li>
-            <li><a asp-controller="App" asp-action="Contact">Contact</a></li>
-            @*<li><a href="#">Whatevs</a></li>*@
-        </ul>
-    </div>
+<div id="sidebar">
+    @if (User.Identity.IsAuthenticated)
+    {
+        <img src="~/img/ice_hockey_monkey1.jpg" alt="headshot" class="headshot"/>
+        <span id="username">@User.Identity.Name</span>
+    }
+    <ul class="nav">
+        <li class="active"><a asp-controller="App" asp-action="Index">Home</a></li>
+        <li><a asp-controller="App" asp-action="About">About</a></li>
+        <li><a asp-controller="App" asp-action="Contact">Contact</a></li>
+        @if (User.Identity.IsAuthenticated)
+        {
+            <li><a asp-controller="App" asp-action="Trips">Trips</a></li>
+            <li><a asp-controller="Auth" asp-action="Logout">Logout</a></li>
+        }
+        @*<li><a href="#">Whatevs</a></li>*@</ul>
+</div>
 
     <div id="wrapper">
         <nav class="navbar navbar-inverse">
