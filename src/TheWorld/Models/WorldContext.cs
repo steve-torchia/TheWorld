@@ -22,7 +22,12 @@ namespace TheWorld.Models
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
+
+#if RELEASE
             var connString = Startup.Configuration["Data:WorldContextConnection"];
+#else
+            var connString = Startup.Configuration["Data:WorldContextConnectionRelease"];
+#endif
 
             optionsBuilder.UseSqlServer(connString);
 

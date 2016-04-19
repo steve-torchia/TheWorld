@@ -7,6 +7,7 @@
   },
 
   "Data": {
-    "WorldContextConnection": "Server=(localdb)\\ProjectsV12; Database=TheWorldDb;Trusted_Connection=true;MultipleActiveResultSets=true;"
+    "WorldContextConnection": "Server=(localdb)\\ProjectsV12; Database=TheWorldDb;Trusted_Connection=true;MultipleActiveResultSets=true;",
+    "WorldContextConnectionRelease": "Server=tcp:sktsqlsvr.database.windows.net,1433;Database=TheWorldDb;User ID=skt@sktsqlsvr;Password=@BirdHouse!;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
   }
 }

@@ -141,53 +141,79 @@ namespace TheWorld
             ILoggerFactory loggerFactory,
             IHostingEnvironment env)
         {
-            if (env.IsDevelopment())
+
+            try
             {
-                // change logging level, exception handling, etc..
+                if (env.IsDevelopment())
+                {
+                    // change logging level, exception handling, etc..
 
 
-            }
-            else
-            {
-                
-            }
+                }
+                else
+                {
 
-            // logger has debug/console out of the box.  use AddProvider() to hook up your own
-            loggerFactory.AddConsole(LogLevel.Debug);
-            
-            //app.UseDefaultFiles(); //mvc will handle this..dont'want to serve index.html
-            app.UseStaticFiles();
+                }
 
-            app.UseIdentity();
+                app.UseRuntimeInfoPage();  // go to /runtimeinfo page 
 
-            // Mappings
-            Mapper.Initialize(config =>
-            {
-                config.CreateMap<Trip, TripViewModel>().ReverseMap();
-                config.CreateMap<Stop, StopViewModel>().ReverseMap();
-            }
-                );
+                // logger has debug/console out of the box.  use AddProvider() to hook up your own
+                loggerFactory.AddConsole(LogLevel.Debug);
 
-            // Routes
-            app.UseMvc(config =>
-            {
-                config.MapRoute(
-                    name: "Default",
-                    template: "{controller}/{action}/{id?}",
-                    defaults: new {controller = "App", action = "Index"}
+               //app.UseDefaultFiles(); //mvc will handle this..dont'want to serve index.html
+                app.UseStaticFiles();
+
+                app.UseIdentity();
+
+                // Mappings
+                Mapper.Initialize(config =>
+                {
+                    config.CreateMap<Trip, TripViewModel>().ReverseMap();
+                    config.CreateMap<Stop, StopViewModel>().ReverseMap();
+                }
                     );
+
+                // Routes
+                app.UseMvc(config =>
+                {
+                    config.MapRoute(
+                        name: "Default",
+                        template: "{controller}/{action}/{id?}",
+                        defaults: new {controller = "App", action = "Index"}
+                        );
+                }
+                    );
+
+
+                //  Data seed/prep (only a 1-time thing...or use it to update schema?)
+                await seeder.EnsureSeedDataAsync();
+
+                //app.UseIISPlatformHandler();
+
+                //app.Run(async (context) =>
+                //{
+                //    await context.Response.WriteAsync($"Hello World! {context.Request.Path}");
+                //});
+
+
+                //app.Run(async (context) =>
+                //{
+                //    if (context.Request.Query.ContainsKey("throw"))
+                //    {
+
+                //        throw new Exception("Exception triggered!");
+                //    }
+                //    await context.Response.WriteAsync("EXCEPTION in Configure: " + e.ToString());
+                //});
+
             }
-                );
-
-
-            //  Data seed/prep (only a 1-time thing...or use it to update schema?)
-            await seeder.EnsureSeedDataAsync();
-
-            //app.UseIISPlatformHandler();
-//            app.Run(async (context) =>
-//            {
-//                await context.Response.WriteAsync(html); //$"Hello World! {context.Request.Path}");
-//            });
+            catch (Exception e)
+            {
+                app.Run(async (context) =>
+                {
+                    await context.Response.WriteAsync("EXCEPTION in Configure: " + e.ToString());
+                });
+            }
         }
 
         // Entry point for the application.
