@@ -131,7 +131,7 @@ namespace TheWorld
             services.AddScoped<IMailService, DebugMailService>(); //DI
             
 #else
-             services.AddScoped<IMailService, RealMailService>(); //DI
+             //services.AddScoped<IMailService, RealMailService>(); //DI
 #endif
         }
 
