@@ -48,8 +48,8 @@
         }
     });
 
-    $("#main").on("mouseenter", mouseEnter);
-    $("#main").on("mouseleave", mouseLeave);
+    //$("#main").on("mouseenter", mouseEnter);
+    //$("#main").on("mouseleave", mouseLeave);
 
 })();
 

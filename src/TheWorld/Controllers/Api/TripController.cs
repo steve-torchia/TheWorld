@@ -5,6 +5,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Mvc;
 using Microsoft.Extensions.Logging;
 using TheWorld.Interfaces;
@@ -13,6 +14,7 @@ using TheWorld.ViewModels;
 
 namespace TheWorld.Controllers.Api
 {
+    [Authorize] // TODO: Wire up OAuth or something more hardcore than cookie
     [Route("api/trips")] //root route
     public class TripController : Controller
     {
@@ -28,18 +30,23 @@ namespace TheWorld.Controllers.Api
         [HttpGet("")] //extend routes if necessary
         public JsonResult Get()
         {
-            var results = Mapper.Map<IEnumerable<TripViewModel>>(_repository.GetAllTripsWithStops());
+            var trips = _repository.GetUserTripsWithStops(User.Identity.Name);
+
+            var results = Mapper.Map<IEnumerable<TripViewModel>>(trips);
+
             return Json(results);
         }
 
-        [HttpPost("")]
+        [HttpPost("")] 
         public JsonResult Post([FromBody]TripViewModel tvm)  //[FromBody] binds data from body of request...else default assumes Query String  TripViewModel lets us validate/shape data
-        {
+        {//
             try
             {
-                if (ModelState.IsValid)
+                if (ModelState.IsValid) 
                 {
                     var newTrip = Mapper.Map<Trip>(tvm);
+
+                    newTrip.UserName = User.Identity.Name;
 
                     // Save to DB
                     _logger.LogInformation("Attempting to Save New Trip to DB");
@@ -50,7 +57,7 @@ namespace TheWorld.Controllers.Api
                         Response.StatusCode = (int) HttpStatusCode.Created;
                         return Json(Mapper.Map<TripViewModel>(newTrip));
                     }
-                   
+                    
                 }
 
                 Response.StatusCode = (int) HttpStatusCode.BadRequest;

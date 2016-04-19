@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Security.Authentication.ExtendedProtection;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNet.Authentication.Cookies;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
@@ -42,7 +44,7 @@ namespace TheWorld
         // For more information on how to configure your application, visit http://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            // 
+            // MVC 
             services.AddMvc(config =>
             {
 #if !DEBUG
@@ -57,15 +59,38 @@ namespace TheWorld
 
             //services.AddCaching();// need to look into what this provides
 
+            // Identity/Auth :
+
             services.AddIdentity<WorldUser, IdentityRole>(config =>
             {
                 config.User.RequireUniqueEmail = true;
                 config.Password.RequiredLength = 8;
+
+                // simple cookie auth
                 config.Cookies.ApplicationCookie.LoginPath = "/Auth/Login"; //where to get redirected if not auth'd
+
+                config.Cookies.ApplicationCookie.Events = new CookieAuthenticationEvents()
+                {
+                    // event will only fire if the Auth subsystem detected that the request was unauthorized
+                    OnRedirectToLogin = ctx =>
+                    {
+                        // handle api calls differently
+                        if (ctx.Request.Path.StartsWithSegments("/api") &&
+                            ctx.Response.StatusCode == (int) HttpStatusCode.OK)
+                        {
+                            // send back a 401 and no payload.  the client-side can make decisions based on the 401
+                            ctx.Response.StatusCode = (int) HttpStatusCode.Unauthorized;
+                        }
+                        else
+                        {
+                            ctx.Response.Redirect(ctx.RedirectUri);
+                        }
+                        return Task.FromResult(0);
+                    }
+                };
 
             })
                 .AddEntityFrameworkStores<WorldContext>();  // add the identities to the context
-
 
             // Configure  Auth pipeline...need to research
             //services.ConfigureAuthorization(config =>
@@ -111,11 +136,25 @@ namespace TheWorld
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public async void Configure(IApplicationBuilder app, TheWorldContextSeedData seeder, ILoggerFactory loggerFactory)
+        public async void Configure(IApplicationBuilder app, 
+            TheWorldContextSeedData seeder, 
+            ILoggerFactory loggerFactory,
+            IHostingEnvironment env)
         {
+            if (env.IsDevelopment())
+            {
+                // change logging level, exception handling, etc..
+
+
+            }
+            else
+            {
+                
+            }
+
             // logger has debug/console out of the box.  use AddProvider() to hook up your own
             loggerFactory.AddConsole(LogLevel.Debug);
-
+            
             //app.UseDefaultFiles(); //mvc will handle this..dont'want to serve index.html
             app.UseStaticFiles();
 
